@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fintech-integration-lab"
+version = "0.1.0"
+description = "Recruiter-ready FastAPI project demonstrating webhook verification + idempotency + tests."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.23.0",
+  "pydantic>=2.0.0",
+  "python-dotenv>=1.0.0",
+  "httpx>=0.24.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
