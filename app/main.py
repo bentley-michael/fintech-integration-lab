@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from app.db import init_db
-from app.webhooks.stripe import router as stripe_router
+from app.webhooks.provider import router as provider_router
 
 # Load .env if present (safe no-op if missing)
 load_dotenv()
@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Fintech Integration Lab", lifespan=lifespan)
-app.include_router(stripe_router)
+app.include_router(provider_router)
 
 
 @app.get("/health")

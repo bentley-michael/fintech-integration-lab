@@ -3,9 +3,9 @@ from typing import Any, Dict
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class StripeEvent(BaseModel):
+class ProviderEvent(BaseModel):
     """
-    Minimal Stripe event fields. Allow extra keys.
+    Minimal Provider event fields. Allow extra keys.
     """
     model_config = ConfigDict(extra="allow")
 

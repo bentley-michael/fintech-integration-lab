@@ -1,3 +1,4 @@
+
 import hashlib
 import hmac
 import json
@@ -59,7 +60,7 @@ def test_webhook_valid_signature_stores_event(client: TestClient):
     )
     sig = generate_signature(payload, "whsec_test_secret")
 
-    r = client.post("/webhooks/stripe", content=payload, headers={"Stripe-Signature": sig})
+    r = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r.status_code == 200
     assert r.json()["status"] == "received"
 
@@ -72,14 +73,14 @@ def test_webhook_invalid_signature_returns_400(client: TestClient):
     payload = json.dumps({"id": "evt_bad", "object": "event", "type": "invoice.paid", "created": 1600000000})
     sig = generate_signature(payload, "whsec_WRONG_SECRET")
 
-    r = client.post("/webhooks/stripe", content=payload, headers={"Stripe-Signature": sig})
+    r = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r.status_code == 400
     assert "Invalid signature" in r.text
 
 
 def test_webhook_missing_signature_returns_400(client: TestClient):
     payload = json.dumps({"id": "evt_missing_sig", "object": "event", "type": "invoice.paid", "created": 1600000000})
-    r = client.post("/webhooks/stripe", content=payload)
+    r = client.post("/webhooks/provider", content=payload)
     assert r.status_code == 400
 
 
@@ -87,10 +88,10 @@ def test_webhook_replay_is_idempotent(client: TestClient):
     payload = json.dumps({"id": "evt_replay", "object": "event", "type": "charge.succeeded", "created": 1600000000})
     sig = generate_signature(payload, "whsec_test_secret")
 
-    r1 = client.post("/webhooks/stripe", content=payload, headers={"Stripe-Signature": sig})
+    r1 = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r1.status_code == 200
 
-    r2 = client.post("/webhooks/stripe", content=payload, headers={"Stripe-Signature": sig})
+    r2 = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r2.status_code == 200
     assert r2.json().get("idempotent_replay") is True
 
@@ -104,5 +105,5 @@ def test_webhook_old_timestamp_returns_400(client: TestClient):
     old_ts = int(time.time()) - 600  # 10 minutes ago; default tolerance is 300
     sig = generate_signature(payload, "whsec_test_secret", timestamp=old_ts)
 
-    r = client.post("/webhooks/stripe", content=payload, headers={"Stripe-Signature": sig})
+    r = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r.status_code == 400
