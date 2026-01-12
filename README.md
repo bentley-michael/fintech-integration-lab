@@ -1,13 +1,13 @@
 # Fintech Integration Lab
 
 Recruiter-ready FastAPI project demonstrating:
-- Manual Stripe-style webhook signature verification (HMAC-SHA256) without stripe-python
+- Manual payment provider webhook verification (Stripe-style signature header) without external SDKs
 - Replay protection via timestamp tolerance
 - Idempotency via SQLite primary key constraint on event ID
 - Local tests with pytest + FastAPI TestClient (no external services)
 
 ## Requirements
-- Python 3.11+
+- Python 3.10+
 
 ## Setup (PowerShell)
 ```powershell
@@ -16,27 +16,3 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -U pip
 python -m pip install -e ".[test]"
-```
-
-## Run
-
-```powershell
-cd C:\Users\Nathan\ai_projects\fintech-integration-lab
-.\.venv\Scripts\Activate.ps1
-$env:STRIPE_WEBHOOK_SECRET="whsec_local_test_secret"
-uvicorn app.main:app --reload
-```
-
-## Test
-
-```powershell
-cd C:\Users\Nathan\ai_projects\fintech-integration-lab
-.\.venv\Scripts\Activate.ps1
-pytest
-```
-
-## Environment Variables
-
-* STRIPE_WEBHOOK_SECRET: required for webhook verification; if missing, endpoint returns 400
-* STRIPE_TOLERANCE_SECONDS: default 300
-* DATABASE_PATH: default ./data/app.db
