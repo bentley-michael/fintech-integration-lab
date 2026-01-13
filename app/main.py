@@ -6,7 +6,7 @@ from typing import Dict
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from app.db import init_db
+from app.db import init_db, list_events
 from app.webhooks.provider import router as provider_router
 
 # Load .env if present (safe no-op if missing)
@@ -37,3 +37,8 @@ app.include_router(provider_router)
 @app.get("/health")
 def health_check() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/events")
+def get_events():
+    return {"events": list_events()}

@@ -51,7 +51,38 @@ def record_event(event_id: str, event_type: str, created: int, status: str = "re
             conn.commit()
             return True
     except sqlite3.IntegrityError:
+        # Replay detected (id collision)
         return False
     except Exception as e:
-        logger.error({"event": "db_error", "error": str(e)})
+        logger.error(f"DB Error: {e}")
         raise
+
+
+def list_events(limit: int = 50) -> list[dict]:
+    """
+    Return the last `limit` events, decending by received_at.
+    """
+    db_path = get_db_path()
+    # It's possible the DB doesn't exist yet if no events recorded
+    if not os.path.exists(db_path):
+        return []
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cur = conn.cursor()
+            cur.execute(
+                """
+                SELECT id, type, created_at, received_at, status
+                FROM events
+                ORDER BY received_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            )
+            rows = cur.fetchall()
+            return [dict(row) for row in rows]
+    except Exception as e:
+        logger.error(f"DB Read Error: {e}")
+        return []
+

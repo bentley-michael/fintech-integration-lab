@@ -107,3 +107,33 @@ def test_webhook_old_timestamp_returns_400(client: TestClient):
 
     r = client.post("/webhooks/provider", content=payload, headers={"Stripe-Signature": sig})
     assert r.status_code == 400
+
+
+def test_events_endpoint(client: TestClient):
+    # 1. Post a valid webhook
+    payload = json.dumps({
+        "id": "evt_demo_test",
+        "object": "event",
+        "type": "charge.succeeded",
+        "created": int(time.time()),
+    })
+    secret = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_test_secret")
+    sig = generate_signature(payload, secret)
+    headers = {"Stripe-Signature": sig}
+
+    r = client.post("/webhooks/provider", content=payload, headers=headers)
+    assert r.status_code == 200
+
+    # 2. Get events
+    r = client.get("/events")
+    assert r.status_code == 200
+    data = r.json()
+    assert "events" in data
+    events = data["events"]
+
+    # Check if our event exists in the list
+    assert len(events) > 0
+    target = next((e for e in events if e["id"] == "evt_demo_test"), None)
+    assert target is not None
+    assert target["type"] == "charge.succeeded"
+    assert target["status"] == "received"
